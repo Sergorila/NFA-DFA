@@ -1,0 +1,16 @@
+C:\Users\Sergey\source\repos\Automat\Automat\bin\Debug\net5.0\Automat.exe
+C:\Users\Sergey\source\repos\Automat\Automat\bin\Debug\net5.0\Automat.deps.json
+C:\Users\Sergey\source\repos\Automat\Automat\bin\Debug\net5.0\Automat.runtimeconfig.json
+C:\Users\Sergey\source\repos\Automat\Automat\bin\Debug\net5.0\Automat.runtimeconfig.dev.json
+C:\Users\Sergey\source\repos\Automat\Automat\bin\Debug\net5.0\Automat.dll
+C:\Users\Sergey\source\repos\Automat\Automat\bin\Debug\net5.0\ref\Automat.dll
+C:\Users\Sergey\source\repos\Automat\Automat\bin\Debug\net5.0\Automat.pdb
+C:\Users\Sergey\source\repos\Automat\Automat\obj\Debug\net5.0\Automat.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\Sergey\source\repos\Automat\Automat\obj\Debug\net5.0\Automat.AssemblyInfoInputs.cache
+C:\Users\Sergey\source\repos\Automat\Automat\obj\Debug\net5.0\Automat.AssemblyInfo.cs
+C:\Users\Sergey\source\repos\Automat\Automat\obj\Debug\net5.0\Automat.csproj.CoreCompileInputs.cache
+C:\Users\Sergey\source\repos\Automat\Automat\obj\Debug\net5.0\Automat.dll
+C:\Users\Sergey\source\repos\Automat\Automat\obj\Debug\net5.0\ref\Automat.dll
+C:\Users\Sergey\source\repos\Automat\Automat\obj\Debug\net5.0\Automat.pdb
+C:\Users\Sergey\source\repos\Automat\Automat\obj\Debug\net5.0\Automat.genruntimeconfig.cache
+C:\Users\Sergey\source\repos\Automat\Automat\obj\Debug\net5.0\Automat.csproj.AssemblyReference.cache
