@@ -11,11 +11,21 @@ namespace Automat
     {
         private HashSet<string> _states;
         private HashSet<string> _alphabet;
-        private Dictionary<string, List<KeyValuePair<string, List<string>>>> _transitions;
+        //private Dictionary<string, List<KeyValuePair<string, List<string>>>> _transitions;
+        private Dictionary<string, Dictionary<string, List<string>>> _transitions;
         private string _initialState;
         private HashSet<string> _finalStates;
-        private Dictionary<string, List<string>> _epsTransitions;
+       // private Dictionary<string, List<string>> _epsTransitions;
 
+        public nfa(HashSet<string> states, HashSet<string> alphabet, Dictionary<string, Dictionary<string, List<string>>> transitions,
+            string initialState, HashSet<string> finalStates)
+        {
+            _states = states;
+            _alphabet = alphabet;
+            _transitions = transitions;
+            _initialState = initialState;
+            _finalStates = finalStates;
+        }
         public nfa(string path)
         {
             using (StreamReader sr = new StreamReader(path))
@@ -24,8 +34,8 @@ namespace Automat
                 _alphabet = new HashSet<string>();
                 _states = new HashSet<string>();
                 _finalStates = new HashSet<string>();
-                _transitions = new Dictionary<string, List<KeyValuePair<string, List<string>>>>();
-                _epsTransitions = new Dictionary<string, List<string>>();
+                _transitions = new Dictionary<string, Dictionary<string, List<string>>>();
+                //_epsTransitions = new Dictionary<string, List<string>>();
 
                 _alphabet = sr.ReadLine().Split(' ').ToHashSet();
                 input = sr.ReadLine().Split(' ');
@@ -41,6 +51,7 @@ namespace Automat
                     {
                         _finalStates.Add(item.Substring(1, item.Length - 1));
                         _states.Add(item.Substring(1, item.Length - 1));
+                        Console.WriteLine(item.Substring(1, item.Length - 1));
                     }
                     else
                     {
@@ -56,7 +67,7 @@ namespace Automat
                     {
                         if (state == input[0])
                         {
-                            List<KeyValuePair<string, List<string>>> transitions = new List<KeyValuePair<string, List<string>>>();
+                            Dictionary<string, List<string>> transitions = new Dictionary<string, List<string>>();
                             for (int i = 1; i < input.Length; i++)
                             {
                                 if (input[i].Contains('|'))
@@ -64,26 +75,28 @@ namespace Automat
                                     var eps = input[i].Split('|');
                                     if (eps[1].Split(' ').Length > 1)
                                     {
-                                        _epsTransitions.Add(state, eps[1].Split(' ').ToList());
+                                        transitions["_"] = eps[1].Split(' ').ToList();
+                                        //_epsTransitions.Add(state, eps[1].Split(' ').ToList());
                                     }
                                     else
                                     {
-                                        _epsTransitions.Add(state, new List<string>() { eps[1]});
+                                        transitions["_"] = new List<string>() { eps[1] };
+                                        //_epsTransitions.Add(state, new List<string>() { eps[1]});
                                     }
                                     var temp = eps[0].Split(',');
                                     if (temp[1].Split(' ').Length > 1)
                                     {
-                                        transitions.Add(new KeyValuePair<string, List<string>>(temp[0], temp[1].Split(' ').ToList()));
+                                        transitions[temp[0]] = temp[1].Split(' ').ToList();
                                     }
                                     else
                                     {
-                                        transitions.Add(new KeyValuePair<string, List<string>>(temp[0], new List<string>() { temp[1] }));
+                                        transitions[temp[0]] = new List<string>() { temp[1] };
                                     }
                                 }
-                                else
+                                else if (input.Length > 2)
                                 {
                                     var temp = input[i].Split(',');
-                                    transitions.Add(new KeyValuePair<string, List<string>>(temp[0], temp[1].Split(' ').ToList()));
+                                    transitions.Add(temp[0], temp[1].Split(' ').ToList());
                                 }
                             }
                             _transitions.Add(state, transitions);
@@ -93,18 +106,18 @@ namespace Automat
             }
         }
 
-        public void ShowEps()
-        {
-            foreach(var eps in _epsTransitions.Keys)
-            {
-                Console.Write("{0}", eps);
-                foreach (var t in _epsTransitions[eps])
-                {
-                    Console.Write("{0} ", t);
-                }
-                Console.WriteLine();
-            }
-        }
+        //public void ShowEps()
+        //{
+        //    foreach(var eps in _epsTransitions.Keys)
+        //    {
+        //        Console.Write("{0}", eps);
+        //        foreach (var t in _epsTransitions[eps])
+        //        {
+        //            Console.Write("{0} ", t);
+        //        }
+        //        Console.WriteLine();
+        //    }
+        //}
 
         public bool IsAccept(string word)
         {
@@ -118,7 +131,6 @@ namespace Automat
                 var frontq = q.Dequeue();
                 int idx = frontq.Key;
                 string state = frontq.Value;
-                Console.WriteLine(state);
                 if (idx == word.Length)
                 {
                     if (_finalStates.Contains(state))
@@ -126,30 +138,28 @@ namespace Automat
                         f = true;
                     }
                 }
-                if (_epsTransitions.ContainsKey(state))
-                {
-                    foreach (var eps in _epsTransitions[state])
-                    {
-                        q.Enqueue(new KeyValuePair<int, string>(idx, eps));
-                        Console.Write("eps ");
-                        ShowTransition(word[idx].ToString(), state, eps);
-                    }
-
-                }
                 else if (_transitions.ContainsKey(state))
                 {
-                    foreach (var tr in _transitions[state])
+                    foreach (var transition in _transitions[state])
                     {
-                        if (word[idx].ToString() == tr.Key)
+                        var d = transition.Key;
+                        var states = transition.Value;
+
+                        if (d == "_")
                         {
-                            foreach (var st in tr.Value)
+                            foreach (var st in states)
+                            {
+                                q.Enqueue(new KeyValuePair<int, string>(idx, st));
+                                ShowTransition(word[idx].ToString(), state, st);
+                            }
+                        }
+                        else if (word[idx].ToString() == d)
+                        {
+                            foreach (var st in states)
                             {
                                 q.Enqueue(new KeyValuePair<int, string>(idx + 1, st));
-                                Console.WriteLine(idx);
                                 ShowTransition(word[idx].ToString(), state, st);
-                                idx += 1;
                             }
-                            
                         }
                     }
                 }
@@ -194,19 +204,28 @@ namespace Automat
 
                 foreach (var trans in _transitions[state])
                 {
-                    Console.Write("\t{");
-                    foreach(var t in trans.Value)
+                    if (trans.Key != "_")
                     {
-                        Console.Write("{0} ", t);
+                        Console.Write("\t{");
+                        foreach (var t in trans.Value)
+                        {
+                            Console.Write("{0} ", t);
+                        }
+                        Console.Write("}");
                     }
-                    Console.Write("}");
+                    
                 }
-                Console.Write("\t");
-                if (_epsTransitions.ContainsKey(state))
+                foreach (var trans in _transitions[state])
                 {
-                    Console.Write(" | ");
-                    foreach (var eps in _epsTransitions[state])
-                        Console.Write("{0} ", eps);
+                    if (trans.Key == "_")
+                    {
+                        Console.Write(" | ");
+                        foreach (var t in trans.Value)
+                        {
+                            Console.Write("{0} ", t);
+                        }
+                    }
+
                 }
                 Console.WriteLine();
                 Console.WriteLine();
@@ -224,5 +243,182 @@ namespace Automat
                 Console.WriteLine("Не принято");
             }
         }
+
+        public nfa RemoveEps()
+        {
+            var statesPrime = _states;
+            var transitionsPrime = _transitions;
+            var trInitState = _initialState;
+            var trFinalStates = _finalStates;
+
+            if (IsContainsEps())
+            {
+                transitionsPrime = new Dictionary<string, Dictionary<string, List<string>>>();
+
+                foreach (var q in statesPrime)
+                {
+                    var closureStates = GetEpsClosure(q);
+
+                    foreach (var sigma in _alphabet)
+                    {
+                        List<string> toEpsClosure = new List<string>();
+                        List<string> newTransitions = new List<string>();
+
+                        foreach (var closureState in closureStates)
+                        {
+                            if (_finalStates.Contains(closureState))
+                            {
+                                trFinalStates.Add(q);
+                            }
+                            if (_transitions.ContainsKey(closureState) && _transitions[closureState].ContainsKey(sigma))
+                            {
+                                toEpsClosure.AddRange(_transitions[closureState][sigma]);
+                            }
+                        }
+
+                        foreach (var espClosure in toEpsClosure)
+                        {
+                            newTransitions.AddRange(GetEpsClosure(espClosure));
+                        }
+
+                        if (!transitionsPrime.ContainsKey(q))
+                        {
+                            transitionsPrime[q] = new Dictionary<string, List<string>>();
+                        }
+
+                        if (sigma != "_")
+                        {
+                            transitionsPrime[q][sigma] = new HashSet<string>(newTransitions).ToList();
+                        }
+
+                    }
+                }
+            }
+
+            return new nfa(statesPrime, _alphabet, transitionsPrime, trInitState, trFinalStates);
+        }
+
+        public bool IsContainsEps()
+        {
+            foreach (var state in _transitions.Keys)
+            {
+                if (_transitions[state].ContainsKey("_"))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        public List<string> GetEpsClosure(string q, List<string> visited = null)
+        {
+            List<string> ans = new List<string>() { q };
+
+            if (visited == null)
+            {
+                visited = new List<string>() { q };
+            }
+
+            if (_transitions.ContainsKey(q))
+            {
+                if (_transitions[q].ContainsKey("_"))
+                {
+                    foreach (var st in _transitions[q]["_"])
+                    {
+                        visited.Add(st);
+                        List<string> temp = new List<string>();
+                        foreach (var k in GetEpsClosure(st, visited))
+                        {
+                            if (!ans.Contains(k))
+                            {
+                                temp.Add(k);
+                            }
+                        }
+                        ans.AddRange(temp);
+                    }
+                }
+            }
+
+            return ans;
+        }
+
+        //public dfa GetDFA()
+        //{
+        //    var localNFA = RemoveEps();
+
+        //    List<string> statesPrime = new List<string>();
+        //    Dictionary<string, Dictionary<string, List<string>>> transitionsPrime = new Dictionary<string, Dictionary<string, List<string>>>();
+        //    Queue<List<string>> queue = new Queue<List<string>>();
+        //    List<List<string>> visited = new List<List<string>>() { new List<string> { localNFA._initialState } };
+        //    queue.Enqueue(new List<string>() { localNFA._initialState });
+
+        //    while(queue.Count != 0)
+        //    {
+        //        var qs = queue.Dequeue();
+        //        Dictionary<string, List<string>> t = new Dictionary<string, List<string>>();
+
+        //        foreach (var q in qs)
+        //        {
+        //            if (localNFA._transitions.ContainsKey(q))
+        //            {
+        //                foreach (var s in localNFA._transitions[q].Keys)
+        //                {
+        //                    var tmp = new List<string>(localNFA._transitions[q][s]);
+
+        //                    if (tmp.Count != 0)
+        //                    {
+        //                        if (t.ContainsKey(s))
+        //                        {
+        //                            List<string> tt = new List<string>();
+        //                            foreach (var k in tmp)
+        //                            {
+        //                                if (!t[s].Contains(k))
+        //                                {
+        //                                    tt.Add(k);
+        //                                }
+        //                            }
+        //                            t[s].AddRange(tt);
+        //                        }
+        //                    }
+        //                    else
+        //                    {
+        //                        t[s] = new List<string>(tmp);
+        //                    }
+        //                }
+        //            }
+        //        }
+
+        //        foreach (var v in t.Keys)
+        //        {
+        //            t[v].Sort();
+        //            var temp = new List<string>(t[v]);
+
+        //            if (!visited.Contains(temp))
+        //            {
+        //                queue.Enqueue(temp);
+        //                visited.Add(temp);
+        //            }
+        //            // t[v]
+        //        }
+
+        //        transitionsPrime[qs] =
+        //    }
+
+        //    HashSet<string> finalstatesPrime = new HashSet<string>();
+
+        //    foreach (var qs in statesPrime)
+        //    {
+        //        foreach (var q in qs)
+        //        {
+
+        //        }
+        //    }
+
+
+
+
+        //}   
+
+
     }
 }

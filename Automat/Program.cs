@@ -13,8 +13,13 @@ namespace Automat
 
             nfa n = new nfa(@"C:\Users\Sergey\source\repos\Automat\Automat\TextFile2.txt");
             n.ShowData();
-            n.ShowEps();
-            n.ShowResult(n.IsAccept("a"));
+            //n.ShowEps();
+            n.ShowResult(n.IsAccept("bbaa"));
+
+            //nfa n1 = d.GetNFA();
+            //nfa n2 = n.RemoveEps();
+            //n1.ShowData();
+            //n2.ShowData();
         }
     }
 }

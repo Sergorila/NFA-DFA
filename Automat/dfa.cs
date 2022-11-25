@@ -11,11 +11,12 @@ namespace Automat
     {
         private HashSet<string> _states;
         private HashSet<string> _alphabet;
-        private Dictionary<string, List<KeyValuePair<string, string>>> _transitions;
+        private Dictionary<string, Dictionary<string, string>> _transitions;
+        //private Dictionary<string, List<KeyValuePair<string, string>>> _transitions;
         private string _initialState;
         private HashSet<string> _finalStates;
 
-        public dfa(HashSet<string> states, HashSet<string> alphabet, Dictionary<string, List<KeyValuePair<string, string>>> transitions,
+        public dfa(HashSet<string> states, HashSet<string> alphabet, Dictionary<string, Dictionary<string, string>> transitions,
             string initialState, HashSet<string> finalStates)
         {
             _states = states;
@@ -32,7 +33,7 @@ namespace Automat
                 _alphabet = new HashSet<string>();
                 _states = new HashSet<string>();
                 _finalStates = new HashSet<string>();
-                _transitions = new Dictionary<string, List<KeyValuePair<string, string>>>();
+                _transitions = new Dictionary<string, Dictionary<string, string>>();
 
                 _alphabet = sr.ReadLine().Split(' ').ToHashSet();
                 input = sr.ReadLine().Split(' ');
@@ -63,12 +64,12 @@ namespace Automat
                     {
                         if (state == input[0])
                         {
-                            List<KeyValuePair<string, string>> transitions = new List<KeyValuePair<string, string>>();
+                            Dictionary<string, string> transitions = new Dictionary<string, string>();
                             string[] inpTransitions = input[1].Split(' ');
                             foreach (var tr in inpTransitions)
                             {
                                 string[] temp = tr.Split(',');
-                                transitions.Add(new KeyValuePair<string, string>(temp[0], temp[1]));
+                                transitions[temp[0]] = temp[1];
                             }
 
                             _transitions.Add(state, transitions);
@@ -167,6 +168,34 @@ namespace Automat
             {
                 Console.WriteLine("Не принято");
             }
+        }
+
+        public nfa GetNFA()
+        {
+            var states = _states;
+            Dictionary<string, Dictionary<string, List<string>>> transitions = new Dictionary<string, Dictionary<string, List<string>>>();
+            var initialState = _initialState;
+            var finalStates = _finalStates;
+            var alphabet = _alphabet;
+
+            foreach (var item in _transitions)
+            {
+                Dictionary<string, List<string>> temp = new Dictionary<string, List<string>>();
+                foreach (var i in item.Value)
+                {
+                    if (!temp.ContainsKey(i.Key))
+                    {
+                        temp.Add(i.Key, new List<string>() { i.Value });
+                    }
+                    else
+                    {
+                        temp[i.Key].Add(i.Value);
+                    }
+                }
+                transitions.Add(item.Key, temp);
+            }
+
+            return new nfa(states, alphabet, transitions, initialState, finalStates);
         }
     }
 }
